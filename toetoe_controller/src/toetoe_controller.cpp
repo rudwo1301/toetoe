@@ -2,6 +2,9 @@
 
 int main(int argc, char** argv)
 {
+    ankle_roll_trajectory_file.open("/home/econom2/Desktop/matlab/data/ankle_roll_tra.txt");
+    ankle_roll_real_file.open("/home/econom2/Desktop/matlab/data/ankle_roll_real.txt");
+
     ros::init(argc, argv, "toetoe_controller");
     ros::NodeHandle nh;
 
@@ -17,6 +20,12 @@ int main(int argc, char** argv)
     MODEL_DOF = MODEL_DOF_WITH_VIRTUAL_JOINT - VIRTUAL_DOF;
     ROS_INFO("TOTAL DOF : %d", MODEL_DOF);
 
+    run_time_ = 5.0;
+    end_t_ = start_t_ + run_time_;
+
+    ankle_roll_input = 10*DEG2RAD;
+    ankle_pitch_input = 10*DEG2RAD;
+
     parameterSetting();
 
     mujoco_joint_state_sub_ = nh.subscribe("/mujoco_ros_interface/joint_states",5,&jointStateCallback, ros::TransportHints().tcpNoDelay(true));
@@ -27,28 +36,39 @@ int main(int argc, char** argv)
     mujoco_sim_command_pub_ = nh.advertise<std_msgs::String>("/mujoco_ros_interface/sim_command_con2sim",5);
     mujoco_joint_set_pub_ = nh.advertise<mujoco_ros_msgs::JointSet>("/mujoco_ros_interface/joint_set",5);
 
+    mujoco_sim_time = 0.0;
+    simready();
+
     //control mode
     int control_mode = 0;//0 position, 1 torque
+    int position_mode = 0;//0 ankle, 1 com position
 
-    ankle_roll_input = 10*DEG2RAD;
-    ankle_pitch_input = 10*DEG2RAD;
-    
-    desiredSetting();
-
-    ros::Rate loop_rate(200);
+    ros::Rate loop_rate(hz_);
     while(ros::ok())
     {
         if(control_mode == 0)
         {
+            if(position_mode == 0)
+                desiredAnkleTrajectory();
+            else if(position_mode == 1)
+                desiredPositionTrajectory();
+                computeIK(com_Trajectory);
+            
             jointPositionSetCommand();
+            ankle_roll_real_file << current_q_(0) << std::endl;
         }
         else if(control_mode == 1)
         {
             jointTorqueSetCommand();
         }
         ros::spinOnce();
-        loop_rate.sleep();
+        //loop_rate.sleep();
+        wait();
+        motion_tick_++;
     }
+
+    ankle_roll_trajectory_file.close();
+    ankle_roll_real_file.close();
 
     return 0;
 }
@@ -76,17 +96,35 @@ void parameterSetting()
 
     mujoco_joint_set_msg_.position.resize(MODEL_DOF);
     mujoco_joint_set_msg_.torque.resize(MODEL_DOF);
+
+    com_Trajectory.setIdentity();
+    start_tick_ = start_t_ * hz_;
+    end_tick_ = end_t_ * hz_;
 }
 
-void desiredSetting()
+void desiredAnkleTrajectory()
 {
-    std::cout << "init : " << mujoco_init_receive << std::endl;
-    std::cout << "desired" << std::endl;
-    desired_q_(0) = ankle_pitch_input; //ankle_pitch
-    std::cout << desired_q_(0) << std::endl<<std::endl;
-    desired_q_(1) = ankle_roll_input;//ankle_roll
-    ros::Duration(5).sleep();
-    std::cout << "init : " << mujoco_init_receive << std::endl;    
+    //ankle_pitch
+    if(motion_tick_ <(end_tick_-start_tick_)/2)
+        desired_q_(0) = DyrosMath::cubic(motion_tick_, start_tick_, (end_tick_ - start_tick_)/2-1, 0.0, ankle_pitch_input, 0.0, 0.0);
+    else if(motion_tick_ >=(end_tick_-start_tick_)/2 && motion_tick_ <=end_tick_)
+        desired_q_(0) = DyrosMath::cubic(motion_tick_, (end_tick_-start_tick_)/2, end_tick_, ankle_pitch_input, 0.0, 0.0, 0.0);
+    //std::cout << desired_q_(0) << std::endl;
+    ankle_roll_trajectory_file << desired_q_(0) << std::endl;
+    
+    //ankle_roll
+    desired_q_(1) = 0.0;
+    //DyrosMath::cubic(motion_tick_, start_tick_, end_tick_, 0.0, 0.0, ankle_roll_input, 0.0);
+}
+
+void desiredPositionTrajectory()
+{
+
+}
+
+void computeIK(Eigen::Isometry3d com_Position_Trajectory)
+{
+
 }
 
 void sensorStateCallback(const mujoco_ros_msgs::SensorStateConstPtr& msg)
@@ -105,12 +143,10 @@ void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg)
 
     if(mujoco_init_receive == false)
     {
-        std::cout << "here" << std::endl;
         for(int i=0; i <MODEL_DOF; i++)
         {
             desired_q_(i) = current_q_(i);
         }
-        std::cout << desired_q_(0) << std::endl << std::endl;
         mujoco_init_receive = true;
     }
 }
@@ -130,6 +166,13 @@ void simCommandCallback(const std_msgs::StringConstPtr& msg)
         std_msgs::String rst_msg_;
         rst_msg_.data = "RESET";
         mujoco_sim_command_pub_.publish(rst_msg_);
+        
+        ros::Rate poll_rate(100);
+        while(!mujoco_init_receive &&ros::ok()){
+            ros::spinOnce();
+            poll_rate.sleep();
+        }
+        mujoco_init_receive=false;
     }
 
     if(buf == "INIT")
@@ -146,6 +189,40 @@ void simCommandCallback(const std_msgs::StringConstPtr& msg)
 void simTimeCallback(const std_msgs::Float32ConstPtr& msg)
 {
     mujoco_sim_time = msg->data;
+}
+
+void simready()
+{
+    ros::Rate poll_rate(100);
+    while(!mujoco_ready && ros::ok())
+    {
+        ros::spinOnce();
+        poll_rate.sleep();
+    }
+}
+
+void wait()
+{
+    bool test_b = false;
+
+    ros::Rate poll_rate(20000);
+    int n = 0;
+
+    ROS_INFO_COND(test_b, " wait loop enter");
+    while ((mujoco_sim_time < (mujoco_sim_last_time + 1.0 / hz_)) && ros::ok())
+    {
+        ros::spinOnce();
+        poll_rate.sleep();
+        n++;
+    }
+    ROS_INFO_COND(test_b, " wait loop exit with n = %d", n);
+
+    while((mujoco_sim_time<(mujoco_sim_last_time+1.0/hz_))&&ros::ok()){
+        //ROS_INFO("WAIT WHILE");
+        ros::spinOnce();
+        poll_rate.sleep();
+
+    }
 }
 
 void jointTorqueSetCommand()

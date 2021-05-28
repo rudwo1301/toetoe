@@ -68,8 +68,8 @@
     </worldbody>
     
     <actuator>
-        <position class="position" ctrllimited="true" ctrlrange="-3 3"  name="Ankle_pitch" joint="ankle_pitch" kp = "10"/>
-        <position class="position" ctrllimited="true" ctrlrange="-3 3"  name="Ankle_roll" joint="ankle_roll" kp = "10"/>
+        <position class="position" ctrllimited="true" ctrlrange="-3 3"  name="Ankle_pitch" joint="ankle_pitch" kp = "40"/>
+        <position class="position" ctrllimited="true" ctrlrange="-3 3"  name="Ankle_roll" joint="ankle_roll" kp = "40"/>
     </actuator>
 
     <sensor>

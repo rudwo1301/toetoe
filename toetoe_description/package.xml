@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>toetoe_description</name>
+  <version>0.0.0</version>
+  <description>The toetoe_description package</description>
+
+  <maintainer email="econom2@snu.ac.kr">econom2</maintainer>
+
+  <license>TODO</license>
+
+  <author email="psh117@snu.ac.kr">Suhan Park</author>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>

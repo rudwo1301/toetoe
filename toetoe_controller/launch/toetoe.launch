@@ -1,0 +1,12 @@
+<launch>
+  <arg name="pub_mode" default="false"/>
+
+  <node name="mujoco_ros" pkg="mujoco_ros" type="mujoco_ros" required="true" respawn="false" output="screen">
+    <param name="license" type="string" value="$(env HOME)/mjkey.txt"/>
+    <param name="model_file" type="string" value="$(find toetoe_description)/robots/toetoe.xml"/>
+    <param name="pub_mode" value="$(arg pub_mode)"/>
+  </node>
+
+  <node name="toetoe_controller" pkg="toetoe_controller" type="toetoe_controller" output="screen">
+  </node>
+</launch>

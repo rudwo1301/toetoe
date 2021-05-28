@@ -1,0 +1,165 @@
+<robot name="toetoe">
+  <link name="world"/>
+  <joint name="virtual" type="floating">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
+
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0 -0.092451" rpy="0 0 0" />
+      <mass value="1.2434" />
+      <inertia
+        ixx="0.0038711"
+        ixy="-1.3084E-20"
+        ixz="-4.8472E-20"
+        iyy="0.0038588"
+        iyz="1.6148E-19"
+        izz="0.00052279" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://toetoe_description/meshes/base_link.stl" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://toetoe_description/meshes/base_link.stl" />
+      </geometry>
+    </collision>
+  </link>
+  
+  <joint
+    name="ankle_pitch"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.2"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="ankle_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="30"
+      velocity="1" />
+  </joint>
+
+  <link name="ankle_link">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.13016" />
+      <inertia
+        ixx="2.2187E-05"
+        ixy="-6.7632E-23"
+        ixz="3.662E-22"
+        iyy="3.0815E-05"
+        iyz="-5.7445E-22"
+        izz="3.5626E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://toetoe_description/meshes/ankle_link.stl" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://toetoe_description/meshes/ankle_link.stl" />
+      </geometry>
+    </collision>
+  </link>
+  
+  <joint
+    name="ankle_roll"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="ankle_link" />
+    <child
+      link="foot_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="30"
+      velocity="1" />
+  </joint>
+
+  <link
+    name="foot_link">
+    <inertial>
+      <origin
+        xyz="0 0 -0.020648"
+        rpy="0 0 0" />
+      <mass
+        value="0.24705" />
+      <inertia
+        ixx="0.00016385"
+        ixy="4.8738E-20"
+        ixz="-4.0406E-20"
+        iyy="0.00044566"
+        iyz="6.6009E-21"
+        izz="0.00058131" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://toetoe_description/meshes/foot_link.stl" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://toetoe_description/meshes/foot_link.stl" />>
+      </geometry>
+    </collision>
+  </link>
+  
+</robot>

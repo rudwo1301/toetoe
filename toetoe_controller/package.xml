@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+  <name>toetoe_controller</name>
+  <version>0.0.0</version>
+  <description>The toetoe_controller package</description>
+
+  <maintainer email="rudwo1301@snu.ac.kr">econom2</maintainer>
+
+  <license>TODO</license>
+
+  <author email="rudwo1301@snu.ac.kr">econom2</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>mujoco_ros_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+
+  <run_depend>eigen_conversions</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>mujoco_ros_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+
+  <export>
+  </export>
+</package>

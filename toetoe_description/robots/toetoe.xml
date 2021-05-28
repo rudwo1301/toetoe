@@ -1,0 +1,79 @@
+<mujoco model="toetoe">
+    <compiler angle="radian" meshdir="../meshes/"/>
+    <size njmax="500" nconmax="100" />
+
+    <default>
+		<motor ctrllimited="true" ctrlrange="-300 300"/>
+		<joint damping="10" stiffness = "0"/>
+		<geom rgba = ".7 .7 .7 1"/>
+		<default class="viz">
+			<geom contype="0" conaffinity="0" group="1" type="mesh" rgba=".6 .6 .7 1" />
+		</default>
+
+		<default class="velocity">
+			<velocity ctrllimited="false" forcelimited="false" ></velocity> 
+		</default>
+
+		<default class="FTsensor">
+            <site type="cylinder" size="0.005 0.005" group="4" rgba=".1 .1 .9 1"/>
+		</default>
+
+		<default class="position">
+			<position ctrllimited="false" forcelimited="false" ></position> 
+		</default>
+
+		<default class="Leg">
+            <joint damping="1" frictionloss="4"/>
+        </default>
+
+	</default>
+
+    <option timestep='0.0005'/>
+
+    <asset>
+        <mesh name="base_link" file="base_link.stl" />
+        <mesh name="ankle_link" file="ankle_link.stl" />
+        <mesh name="foot_link" file="foot_link.stl" />
+        <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" 
+        	    width="512" height="512"/>
+		<texture name="groundplane" type="2d" builtin="checker" rgb1=".325 .326 .325" 
+				rgb2=".22 .22 .22" width="100" height="100" mark="none" markrgb=".8 .8 .8"/>
+		<material name='MatPlane' reflectance='0.3' texture="texplane" texrepeat="1 1" texuniform="true"/>
+		<material name="MatGnd" texture="groundplane"  texrepeat="20 20" specular="1" shininess=".3" reflectance="0.00001"/>
+    </asset>
+
+    <worldbody>
+    <geom name='floor' pos='0 0 0' size='5 5 .125' type='plane' material="MatPlane" condim = "3" contype = "0"/>	
+	<light directional="true" cutoff="60" exponent="1" diffuse="1 1 1" specular=".1 .1 .1" pos="1 1 1.5" dir="-1 -1 -1.3"/>
+
+        <body name="base_link" pos="0 0 0.226">
+            <joint type="free" limited='false' damping="0" stiffness="0" armature="0"/>
+            <inertial pos="0 0 0.133549" mass="1.2434" diaginertia="0.0038711 0.0038588 0.00052279" />
+            <geom name="Base" type="box" size="0.025 0.025 0.09" pos="0 0 0.136"/>
+            <geom name="base_link" class="viz" mesh="base_link" pos="0 0 0.226"/>
+            <site name="com_imu" type="cylinder" size="0.005 0.005" pos="0 0 0.226" group="4" rgba=".9 .1 .1 1"/><!--red-->
+            <body name="ankle_link" pos="0 0 0.026">
+                <inertial pos="0 0 0" quat="0 0.707107 0 0.707107" mass="0.13016" diaginertia="3.5626e-05 3.0815e-05 2.2187e-05" />
+                <joint name="ankle_pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-3.14 3.14" />
+                <geom name="ankle_link" class="viz" mesh="ankle_link"/>
+                <body name="foot_link" pos="0 0 0">
+                    <inertial pos="0 0 -0.020648" quat="0 0.707107 0 0.707107" mass="0.24705" diaginertia="0.00058131 0.00044566 0.00016385" />
+                    <joint name="ankle_roll" pos="0 0 0" axis="1 0 0" limited="true" range="-3.14 3.14" />
+                    <geom name="Foot" type="box" size="0.075 0.045 0.003" pos="0 0 -0.023"/>
+                    <geom name="foot_link" class="viz" mesh="foot_link"/>
+                    <site class="FTsensor" name="ankle_ft" pos="0 0 -0.02"/><!--blue-->
+                </body>
+            </body>
+        </body>
+    </worldbody>
+    
+    <actuator>
+        <position class="position" ctrllimited="true" ctrlrange="-3 3"  name="Ankle_pitch" joint="ankle_pitch" kp = "10"/>
+        <position class="position" ctrllimited="true" ctrlrange="-3 3"  name="Ankle_roll" joint="ankle_roll" kp = "10"/>
+    </actuator>
+
+    <sensor>
+        <force name="Ankle_Force" site="ankle_ft"/>
+        <torque name="Ankle_Torque" site="ankle_ft"/>
+    </sensor>
+</mujoco>
